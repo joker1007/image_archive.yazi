@@ -43,7 +43,7 @@ function M:peek()
   local random = math.random(1000000, 9999999)
   local outdir = "/tmp/yazi-" .. random
 
-  child = Command("unar")
+  child, err = Command("unar")
       :args({
         "-f",
         "-D",
@@ -59,7 +59,7 @@ function M:peek()
 
   local status = child:wait()
 
-  if status:success() then
+  if status.success then
     local extracted = outdir .. "/" .. current
     child = Command("convert")
         :args({
@@ -72,7 +72,7 @@ function M:peek()
         :stderr(Command.PIPED)
         :spawn()
     status = child:wait()
-    if not status:success() then
+    if not status.success then
       ya.err("convert error: " .. extracted)
       local data = nil
       repeat
