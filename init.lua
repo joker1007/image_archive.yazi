@@ -2,16 +2,16 @@ local M = {}
 
 math.randomseed(os.time())
 
-function M:peek()
-  local cache = ya.file_cache(self)
+function M:peek(job)
+  local cache = ya.file_cache(job)
   if cache then
-    ya.image_show(cache, self.area)
-    ya.preview_widgets(self, {})
+    ya.image_show(cache, job.area)
+    ya.preview_widgets(job, {})
   end
 
-  local child, code = Command("lsar")
+  local child = Command("lsar")
       :args({
-        tostring(self.file.url),
+        tostring(job.file.url),
       })
       :stdout(Command.PIPED)
       :stderr(Command.PIPED)
@@ -50,7 +50,7 @@ function M:peek()
         "-o",
         outdir,
         "-i",
-        tostring(self.file.url),
+        tostring(job.file.url),
         tostring(i),
       })
       :stdout(Command.PIPED)
@@ -61,7 +61,7 @@ function M:peek()
 
   if status.success then
     local extracted = outdir .. "/" .. current
-    child = Command("convert")
+    child = Command("magick")
         :args({
           extracted,
           "-resize",
@@ -82,8 +82,8 @@ function M:peek()
       return
     end
 
-    ya.image_show(cache, self.area)
-    ya.preview_widgets(self, {})
+    ya.image_show(cache, job.area)
+    ya.preview_widgets(job, {})
 
     child = Command("rm")
         :args({
@@ -95,13 +95,13 @@ function M:peek()
   end
 end
 
-function M:seek(units)
+function M:seek(job)
   local h = cx.active.current.hovered
-  if h and h.url == self.file.url then
-    local step = math.floor(units * self.area.h / 10)
+  if h and h.url == job.file.url then
+    local step = math.floor(job.units * job.area.h / 10)
     ya.manager_emit("peek", {
       tostring(math.max(0, cx.active.preview.skip + step)),
-      only_if = tostring(self.file.url),
+      only_if = tostring(job.file.url),
     })
   end
 end
